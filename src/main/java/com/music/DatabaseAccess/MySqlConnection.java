@@ -14,13 +14,16 @@ public class MySqlConnection {
 	private static final String PASS = "Engineering13";
 
 	public static void main(String[] args) {
-		sendArtist(new Artist("Balance and Composure"));
+		sendAlbum(new Artist("Circa Survive"), new Album("The Amulet", 2017));
 
 		ArrayList<Artist> SavedArtists = getArtists();
 
 		for(Artist art: SavedArtists) {
 			System.out.println("Stored Artist: " + art.getName());
 		}
+
+		getAlbums(SavedArtists.get(0));
+		SavedArtists.get(0).printAlbums();
 	}
 
 	public static void sendArtist(Artist artist) {
@@ -232,6 +235,78 @@ public class MySqlConnection {
 		return StoredArtists;
 	}
 
-	/*public static Album getAlbum() {
-	}*/
+	public static void getAlbums(Artist artist) {	
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+		
+		String sql_get_artist_id = "SELECT artist_id FROM artist WHERE name = '" + artist.getName() + "'";
+		String sql_get_all_albums = "" ;
+		
+		int artistId = -1;
+		String title = "";
+		int releaseYear = -1;
+
+		try {
+			Class.forName(JDBC_DRIVER);
+			conn = DriverManager.getConnection(DB_URL, USER, PASS);
+			stmt = conn.createStatement();
+
+			// Check for artist id and get it from DB
+			rs = stmt.executeQuery(sql_get_artist_id);
+
+			while(rs.next()) {
+				artistId = rs.getInt("artist_id");
+				System.out.println("artist_id: " + artistId);
+			}
+
+			if(artistId <= 0) {
+				System.out.println("Artist does not exist");
+			} else {
+				// Get all albums from that artist
+				sql_get_all_albums = "SELECT title, release_year FROM album WHERE artist_id = " + artistId;
+				rs = stmt.executeQuery(sql_get_all_albums);
+				
+				while(rs.next()) {
+					title = rs.getString("title");
+					releaseYear = rs.getInt("release_year");
+					
+					artist.addAlbum(title, releaseYear);
+				}
+			}
+		} catch(SQLException se) {
+			// Handle error for JDBC
+			se.printStackTrace();
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			// finally block used to close resources
+			try {
+				if(rs != null) {
+					rs.close();
+					System.out.println("Closed rs");
+				}
+			} catch(SQLException se1) {
+				se1.printStackTrace();
+			}
+			
+			try {
+				if(stmt != null) {
+					stmt.close();
+					System.out.println("Closed stmt");
+				}
+			} catch(SQLException se2) {
+				se2.printStackTrace();
+			}
+			
+			try {
+				if(conn != null) {
+					conn.close();
+					System.out.println("Closed conn");
+				}
+			} catch(SQLException se3) {
+				se3.printStackTrace();
+			}
+		}
+	}
 }	
