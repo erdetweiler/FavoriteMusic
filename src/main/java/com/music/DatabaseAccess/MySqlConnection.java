@@ -5,22 +5,30 @@ import java.sql.*;
 
 public class MySqlConnection {
 	// JDBC driver name and database URL
-	static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
-	static final String DB_URL = "jdbc:mysql://104.131.12.112/music";
+	private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
+	private static final String DB_URL = "jdbc:mysql://104.131.12.112/music?useSSL=false";
 
 	// Database credentials
-	static final String USER = "music_user";
-	static final String PASS = "Engineering13";
+	private static final String USER = "music_user";
+	private static final String PASS = "Engineering13";
 
-	public static void sendArtist(String name) {
+	public static void main(String[] args) {
+		sendArtist(new Artist("Tycho"));
+		System.out.println("\n");
+		sendAlbum(new Artist("Circa Survive"), new Album("Juturna", 2005));
+		sendAlbum(new Artist("Turnover"), new Album("Good Nature", 2017));
+		sendAlbum(new Artist("Not real artist"), new Album("Juturna", 2005));
+	}
+
+	public static void sendArtist(Artist artist) {
 		Connection conn = null;
 		Statement stmt = null;
 		ResultSet rs = null;
 
 		int recordCount = -1;
 
-		String sql_check_artist = "SELECT COUNT(*) AS total FROM artist WHERE name = '" + name + "'";
-		String sql_insert_artist = "INSERT INTO artist(name) VALUES('" + name + "')";
+		String sql_check_artist = "SELECT COUNT(*) AS total FROM artist WHERE name = '" + artist.getName() + "'";
+		String sql_insert_artist = "INSERT INTO artist(name) VALUES('" + artist.getName() + "')";
 
 		try {
 			Class.forName(JDBC_DRIVER);
@@ -78,12 +86,85 @@ public class MySqlConnection {
 		}
 	}
 
-	public static void main(String[] args) {
-		sendArtist("mewithoutYou");
-	}
+	public static void sendAlbum(Artist artist, Album album) {
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rs = null;
 
-	public static void sendAlbum() {
+		int recordCount = -1;
+		int artistId = -1;
 
+		String sql_get_artist_id = "SELECT artist_id FROM artist WHERE name = '" + artist.getName() + "'";
+		String sql_check_album = "";
+		String sql_insert_album = "";
+
+		try {
+			Class.forName(JDBC_DRIVER);
+			conn = DriverManager.getConnection(DB_URL, USER, PASS);
+			stmt = conn.createStatement();
+			
+			// Check for artist id and get it from DB
+			rs = stmt.executeQuery(sql_get_artist_id);
+
+			while(rs.next()) {
+				artistId = rs.getInt("artist_id");
+				System.out.println("artist_id: " + artistId);
+			}
+
+			if(artistId <= 0) {
+				System.out.println("Artist does not exist");
+			} else {
+				// Check if album already exists
+				sql_check_album = "SELECT COUNT(*) AS total FROM album WHERE artist_id = " + artistId  + " AND title = '" + album.getTitle() + "' AND release_year = " + album.getReleaseYear() ;
+				rs = stmt.executeQuery(sql_check_album);
+				
+				while(rs.next()) {
+					recordCount = rs.getInt("total");
+					System.out.println("recordCount: " + recordCount);
+				}
+
+				if(recordCount != 0) {
+					System.out.println("Album already exists");
+				} else {
+					sql_insert_album = "INSERT INTO album(artist_id, title, release_year) VALuES(" + artistId + ", '" + album.getTitle() + "', " + album.getReleaseYear() + ")";
+					stmt.executeUpdate(sql_insert_album);
+					System.out.println("Inserted album");
+				}
+			}
+		} catch(SQLException se) {
+			// Handle error for JDBC
+			se.printStackTrace();
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			// finally block used to close resources
+			try {
+				if(rs != null) {
+					rs.close();
+					System.out.println("Closed rs");
+				}
+			} catch(SQLException se1) {
+				se1.printStackTrace();
+			}
+			
+			try {
+				if(stmt != null) {
+					stmt.close();
+					System.out.println("Closed stmt");
+				}
+			} catch(SQLException se2) {
+				se2.printStackTrace();
+			}
+			
+			try {
+				if(conn != null) {
+					conn.close();
+					System.out.println("Closed conn");
+				}
+			} catch(SQLException se3) {
+				se3.printStackTrace();
+			}
+		}
 	}
 
 	/*public static Artist getArtist() {
