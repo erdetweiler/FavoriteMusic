@@ -2,6 +2,7 @@
 
 //import com.music.MusicDetails.*;
 import java.sql.*;
+import java.util.ArrayList;
 
 public class MySqlConnection {
 	// JDBC driver name and database URL
@@ -13,11 +14,13 @@ public class MySqlConnection {
 	private static final String PASS = "Engineering13";
 
 	public static void main(String[] args) {
-		sendArtist(new Artist("Tycho"));
-		System.out.println("\n");
-		sendAlbum(new Artist("Circa Survive"), new Album("Juturna", 2005));
-		sendAlbum(new Artist("Turnover"), new Album("Good Nature", 2017));
-		sendAlbum(new Artist("Not real artist"), new Album("Juturna", 2005));
+		sendArtist(new Artist("Balance and Composure"));
+
+		ArrayList<Artist> SavedArtists = getArtists();
+
+		for(Artist art: SavedArtists) {
+			System.out.println("Stored Artist: " + art.getName());
+		}
 	}
 
 	public static void sendArtist(Artist artist) {
@@ -167,9 +170,68 @@ public class MySqlConnection {
 		}
 	}
 
-	/*public static Artist getArtist() {
+	public static ArrayList<Artist> getArtists() {	
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+
+		String sql_get_all_artists = "SELECT name FROM artist";
+		
+		ArrayList<Artist> StoredArtists = new ArrayList<Artist>();
+
+		String name = "";
+
+		try {
+			Class.forName(JDBC_DRIVER);
+			conn = DriverManager.getConnection(DB_URL, USER, PASS);
+			stmt = conn.createStatement();
+			
+			// Get all artists from DB
+			rs = stmt.executeQuery(sql_get_all_artists);
+
+			while(rs.next()) {
+				name = rs.getString("name");
+
+				StoredArtists.add(new Artist(name));
+			}
+		} catch(SQLException se) {
+			// Handle error for JDBC
+			se.printStackTrace();
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			// finally block used to close resources
+			try {
+				if(rs != null) {
+					rs.close();
+					System.out.println("Closed rs");
+				}
+			} catch(SQLException se1) {
+				se1.printStackTrace();
+			}
+			
+			try {
+				if(stmt != null) {
+					stmt.close();
+					System.out.println("Closed stmt");
+				}
+			} catch(SQLException se2) {
+				se2.printStackTrace();
+			}
+			
+			try {
+				if(conn != null) {
+					conn.close();
+					System.out.println("Closed conn");
+				}
+			} catch(SQLException se3) {
+				se3.printStackTrace();
+			}
+		}
+
+		return StoredArtists;
 	}
 
-	public static Album getAlbum() {
+	/*public static Album getAlbum() {
 	}*/
 }	
