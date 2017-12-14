@@ -6,7 +6,7 @@ import java.sql.*;
 public class MySqlConnection {
 	// JDBC driver name and database URL
 	static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
-	static final String DB_URL = "jdbc:mysql://localhost/music";
+	static final String DB_URL = "jdbc:mysql://104.131.12.112/music";
 
 	// Database credentials
 	static final String USER = "music_user";
@@ -19,7 +19,7 @@ public class MySqlConnection {
 
 		int recordCount = -1;
 
-		String sql_check_artist = "SELECT COUNT(*) FROM artist WHERE name = '" + name + "'";
+		String sql_check_artist = "SELECT COUNT(*) AS total FROM artist WHERE name = '" + name + "'";
 		String sql_insert_artist = "INSERT INTO artist(name) VALUES('" + name + "')";
 
 		try {
@@ -31,7 +31,7 @@ public class MySqlConnection {
 			rs = stmt.executeQuery(sql_check_artist);
 
 			while(rs.next()) {
-				recordCount = rs.getInt("artist_id");
+				recordCount = rs.getInt("total");
 				System.out.println("recordCount: " + recordCount);
 			}
 
@@ -79,7 +79,7 @@ public class MySqlConnection {
 	}
 
 	public static void main(String[] args) {
-		sendArtist("Turnover");
+		sendArtist("mewithoutYou");
 	}
 
 	public static void sendAlbum() {
