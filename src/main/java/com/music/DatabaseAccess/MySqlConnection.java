@@ -1,6 +1,6 @@
-//package com.music.DatabaseAccess;
+package com.music.DatabaseAccess;
 
-//import com.music.MusicDetails.*;
+import com.music.MusicDetails.*;
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -12,19 +12,6 @@ public class MySqlConnection {
 	// Database credentials
 	private static final String USER = "music_user";
 	private static final String PASS = "Engineering13";
-
-	public static void main(String[] args) {
-		sendAlbum(new Artist("Circa Survive"), new Album("The Amulet", 2017));
-
-		ArrayList<Artist> SavedArtists = getArtists();
-
-		for(Artist art: SavedArtists) {
-			System.out.println("Stored Artist: " + art.getName());
-		}
-
-		getAlbums(SavedArtists.get(0));
-		SavedArtists.get(0).printAlbums();
-	}
 
 	public static void sendArtist(Artist artist) {
 		Connection conn = null;

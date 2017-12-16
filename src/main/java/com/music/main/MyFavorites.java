@@ -1,6 +1,7 @@
 package com.music.main;
 
 import com.music.MusicDetails.*;
+import com.music.DatabaseAccess.*;
 import java.util.ArrayList;
 
 class MyFavorites {
@@ -40,6 +41,17 @@ class MyFavorites {
 		for (Artist art : artists) {
 			printArtistDetails(art);
 		}
+
+		System.out.println("GET FROM DB\n");
+
+		ArrayList<Artist> SavedArtists = MySqlConnection.getArtists();
+
+		for(Artist art: SavedArtists) {
+			System.out.println("Stored Artist: " + art.getName());
+		}
+
+		MySqlConnection.getAlbums(SavedArtists.get(0));
+		SavedArtists.get(0).printAlbums();
 	}
 
 }
